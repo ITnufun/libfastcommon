@@ -2698,6 +2698,31 @@ bool isTrailingSpacesLine(const char *tail, const char *end)
     return (p == end || *p == '\n');
 }
 
+ssize_t fc_safe_create(int fd, const size_t nbyte)
+{
+    ssize_t n;
+    n = lseek(fd,nbyte-1, SEEK_SET);
+    if (n<0) 
+    {
+        if (errno != EINTR)
+        {
+            return -1;
+        }
+        n = 0;
+    }
+    n = write(fd, "1", 1);
+    if (n<0) 
+    {
+        if (errno != EINTR)
+        {
+            return -1;
+        }
+        n = 0;
+    }
+    n = lseek(fd, 0, SEEK_SET);
+    return n;
+}
+
 ssize_t fc_safe_write(int fd, const char *buf, const size_t nbyte)
 {
     ssize_t n;
